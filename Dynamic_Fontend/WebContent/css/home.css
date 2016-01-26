@@ -1,0 +1,16 @@
+.func-bar-left {
+	margin-left : 2px;
+	margin-right: 2px;
+	margin-bottom: 10px;
+}
+
+.func-bar-middle {
+	margin-left: 5px;
+	margin-right: 5px;
+	margin-bottom: 10px;
+}
+
+.func-bar-right {
+	margin-left: 5px;
+	margin-bottom: 10px;
+}

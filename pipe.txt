@@ -1,0 +1,20 @@
+////////////// TASK 1a ////////////////////////
+// Run this command first!
+
+./osmconvert austria_latest.osm -B=Graz.poly -o=graz_data.osm &&
+./osmfilter graz_data.osm --keep="railway=tram_stop or highway=bus_stop or public_transport=stop_position or bus=yes or tram=yes" -o=public_transport_stops.osm &&
+./osmconvert public_transport_stops.osm -B=Graz.poly --all-to-nodes --csv="@id @lon @lat name" --csv-separator="," > public_transport_stations.csv &&
+echo "DROP DATABASE IF EXISTS "sa_db"; CREATE DATABASE "sa_db";" > create_db.sql && psql -U postgres -a -f create_db.sql &&
+echo "DROP TABLE IF EXISTS "public_transport_stops"; CREATE TABLE "public_transport_stops" (id bigint, lon double precision, lat double precision, name text); INSERT INTO "public_transport_stops" VALUES" > insert_data.sql &&
+awk -F',' '{ if($4 != "") {print "( "$1 " , "$2 " , "$3 " , \x27"$4 "\x27 )," } }' public_transport_stations.csv  | sed -e '$s/,$/;/' >> insert_data.sql && psql -U postgres -d sa_db -a -f insert_data.sql &&
+echo "DROP TABLE IF EXISTS "station_mapping"; CREATE TABLE "station_mapping" (map_id bigserial, route_id bigint, stop_id bigint, PRIMARY KEY (map_id)); INSERT INTO "station_mapping" (route_id, stop_id) VALUES" > insert_data.sql &&
+awk -F'|' '{ if(NR > 1) {print "( "$1 ","$2 "),"} }' mapping.csv | sed -e '$s/,$/;/' >> insert_data.sql && psql -U postgres -d sa_db -a -f insert_data.sql &&
+echo "DROP TABLE IF EXISTS "routes"; CREATE TABLE "routes" (route_id bigserial, name text, PRIMARY KEY (route_id)); INSERT INTO "routes" VALUES" > insert_data.sql &&
+awk -F'|' '{ if(NR > 1) {print "( "$1 ",\x27"$2"\x27),"} }' routes.csv | sed -e '$s/,$/;/' >> insert_data.sql && psql -U postgres -d sa_db -a -f insert_data.sql1
+ 
+///////////////// TASK 1b ////////////////////////////////
+//Second command 
+./osmfilter graz_data.osm --drop-relations --drop-ways --keep="amenity=bar or amenity=biergarten or amenity=cafe or amenity=fast-food or amenity=pub or amenity=restaurant" -o=restaurants_in_graz.osm &&
+./osmconvert restaurants_in_graz.osm -B=Graz.poly --all-to-nodes --csv="@id @lon @lat name phone amenity cuisine addr:city addr:street addr:housenumber opening_hours outside_seating" --csv-separator="," | sed "s/'/ /g" | sed 's/"/ /g' > restaurants_graz.csv &&
+echo "DROP TABLE IF EXISTS "restaurants"; CREATE TABLE "restaurants" (id bigint, lon double precision, lat double precision, name text, phone text, amenity text, cuisine text, city text, street text, housenumber text, opening_hours text, outside_seating text); INSERT INTO "restaurants" VALUES" > insert_data.sql &&
+awk -F',' '{ if($4 != "") {print "( " $1 " , " $2 " , " $3 " , \x27" $4 "\x27 , \x27" $5 "\x27 , \x27" $6 "\x27 , \x27" $7 "\x27 , \x27" $8 "\x27 , \x27" $9 "\x27 , \x27" $10 "\x27 , \x27" $11 "\x27 , \x27" $12 "\x27 )," } }' restaurants_graz.csv  | sed -e '$s/,$/;/' >> insert_data.sql && psql -U postgres -d sa_db -a -f insert_data.sql

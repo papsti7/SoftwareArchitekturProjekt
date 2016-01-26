@@ -1,0 +1,21 @@
+body {
+  position: relative;
+}
+#searchStationSection {
+  padding-top: 75px;
+  height: 1100px;
+  color: #000;
+  background-color: #6DBDD6;
+}
+#searchConnectionSection {
+  padding-top: 50px;
+  height: 1100px;
+  color: #000;
+  background-color: #005A31;
+}
+#addRouteSection {
+  padding-top: 50px;
+  height: 1100px;
+  color: #000;
+  background-color: #74AFAD;
+}

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>SA 2015</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- CSS Files !-->
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/sandstone/bootstrap.min.css">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link href="css/xeditable.css" rel="stylesheet">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet" />
+  <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+
+  <!-- JS Files !-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js"></script>
+  <script src="js/xeditable.js"></script>
+  <script src="http://maps.googleapis.com/maps/api/js"></script>
+
+  <!-- JS Imports for Drag&Drop !-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+  <!-- Custom CSS Files !-->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Custom JS Files !-->
+  <script src="js/scrolling.js"></script>
+  <script src="js/livesearch.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/dragAndDrop.js"></script>
+
+</head>
+
+<body ng-app="liveSearchApp" ng-controller="stationCtrl">
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">SA 2015</a>
+      </div>
+      <div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="#searchStationSection">Search Station</a>
+            </li>
+            <li>
+              <a href="#searchConnectionSection">Search Connection</a>
+            </li>
+            <li>
+              <a href="#addRouteSection">Add route</a>
+            </li>
+            <li>
+              <a href="#searchRestaurantsNearStationSection">Search Restaurants near to Station</a>
+            </li>
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="searchStationSection" class="container-fluid">
+
+    <div class="alert alert-info">
+      <h2>
+        Enter the name of a Station</h2>
+      <h4>
+        search will start at 3 characters
+      </h4>
+    </div>
+    <div class="well" style="float:left; width:50%; padding: 10px;">
+      <!-- Search Form  !-->
+      <form>
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">
+              <i class="fa fa-search"></i>
+            </div>
+            <!-- The search bar  !-->
+            <input id="searchStation" list="station_list" type="text" class="form-control" placeholder="Search Station name" ng-model="searchStation" ng-change="updateData(this)">
+            <!-- Suggestions (the most important ones at the start, will be replace in javascript when typing)  !-->
+            <datalist id="station_list">
+              <option value="Hauptplatz" />
+              <option value="Jakominiplatz" />
+              <option value="Hauptbahnhof" />
+              <option value="St. Peter" />
+              <option value="Griesplatz" />
+            </datalist>
+          </div>
+        </div>
+      </form>
+      <!-- Content Table !-->
+      <table id="sourceTable" class="table table-bordered table-striped table-condensed">
+        <thead style="display: block; overflow: auto;">
+          <tr>
+            <td>
+              <a href="#
+                " ng-click="sortReverse = (sortType == 'name') && !sortReverse ;sortType = 'name'">
+                  name
+                  <span ng-show="sortType == 'name' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'name' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#" ng-click="sortReverse = (sortType == 'lon') && !sortReverse ;sortType = 'lon'">
+                  lon
+                  <span ng-show="sortType == 'lon' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'lon' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#" ng-click="sortReverse = (sortType == 'lat') && !sortReverse ;sortType = 'lat'">
+                  lat
+                  <span ng-show="sortType == 'lat' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'lat' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+          </tr>
+        </thead>
+        <tbody class="connectedSortable" style="display: block; max-height: 460px; overflow: auto;">
+          <tr ng-repeat="station in stations | orderBy:sortType:sortReverse | filter:searchStation" style="width: 100%">
+            <td>
+              <!-- editable username (text with validation) -->
+              <span editable-text="station.name" e-name="name" e-form="rowform" e-required>
+                {{ station.name || 'empty' }}
+              </span>
+            </td>
+            <td>
+              <!-- editable username (text with validation) -->
+              <span editable-text="station.lon" e-name="lon" e-form="rowform" e-required>
+                {{ station.lon || 'empty' }}
+              </span>
+            </td>
+            <td>
+              <!-- editable username (text with validation) -->
+              <span editable-text="station.lat" e-name="lat" e-form="rowform" e-required>
+                {{ station.lat || 'empty' }}
+              </span>
+            </td>
+            <td>
+              <!-- form -->
+              <form editable-form name="rowform" onaftersave="saveStation(this, station.id, station.name, station.lon, station.lat)" ng-show="rowform.$visible" class="" shown="inserted == station">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
+                  save
+                </button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default">
+                  cancel
+                </button>
+              </form>
+              <div class="buttons" ng-show="!rowform.$visible">
+                <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
+                <button class="btn btn-danger" ng-click="removeStation(this, station)">del</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr/>
+
+      <!-- Content Table !-->
+      <table id="addingTable" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <td colspan="5"><b>Add a new Station:</b></td>
+          </tr>
+          <tr>
+            <td> Name </td>
+            <td> Lon </td>
+            <td> Lat </td>
+            <td colspan="2"> Action </td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <!-- editable username (text with validation) -->
+              <input type="text" class="form-control" placeholder="Jakominiplatz" id="adding_name" ng-model="adding_name">
+            </td>
+            <td>
+              <!-- editable username (text with validation) -->
+              <input type="number" class="form-control" placeholder="17.888" id="adding_lon" ng-model="adding_lon">
+            </td>
+            <td>
+              <!-- editable username (text with validation) -->
+              <input type="number" class="form-control" placeholder="47.9997" id="adding_lat" ng-model="adding_lat">
+            </td>
+            <td style="text-align:center;">
+              <button class="btn btn-primary" ng-click="addStation('{{stations[stations.length]}}', this)">add</button>
+            </td>
+            <td>
+              <button class="btn btn-danger" ng-click="clearAdding()">clear</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="stationMap" class="well" style="width:45%; height:750px; float:right; padding:100px; margin:2%; margin-top:0%;"></div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <div id="searchConnectionSection" class="container-fluid">
+    <div class="alert alert-info">
+      <h2>
+        Enter the names of the Station to search a connection</h2>
+      <h4>
+
+      </h4>
+    </div>
+    <div class="well" style="float:left; width:50%; padding: 10px;">
+      <!-- Search Form  !-->
+      <form>
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">
+              <i class="fa fa-search"></i>
+            </div>
+            <!-- The search bar  !-->
+            <input id="searchConnection_from" list="station_list_from" type="text" class="form-control" placeholder="Search Station name" ng-model="searchConnection_from">
+            <datalist id="station_list_from">
+              <option value="Hauptplatz" />
+              <option value="Jakominiplatz" />
+              <option value="Hauptbahnhof" />
+              <option value="St. Peter" />
+              <option value="Griesplatz" />
+            </datalist>
+
+            <input id="searchConnection_to" list="station_list_to" type="text" class="form-control" placeholder="Search Station name" ng-model="searchConnection_to">
+            <!-- Suggestions (the most important ones at the start, will be replace in javascript when typing)  !-->
+            <datalist id="station_list_to">
+              <option value="Hauptplatz" />
+              <option value="Jakominiplatz" />
+              <option value="Hauptbahnhof" />
+              <option value="St. Peter" />
+              <option value="Griesplatz" />
+            </datalist>
+
+            <button class="btn btn-primary" ng-click="searchConnection(this)">Find</button>
+          </div>
+        </div>
+      </form>
+      <!-- Content Table !-->
+      <table id="sourceTable" class="table table-bordered table-striped table-condensed">
+        <thead style="display: block; overflow: auto;">
+          <tr>
+            <td>
+              <a href="#
+                " ng-click="sortReverse = (sortType == 'name') && !sortReverse ;sortType = 'name'">
+                  name
+                  <span ng-show="sortType == 'name' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'name' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+          </tr>
+        </thead>
+        <tbody class="connectedSortable" style="display: block; max-height: 460px; overflow: auto;">
+          <tr ng-repeat="connection in connections | orderBy:sortType:sortReverse | filter:searchStation" style="width: 100%">
+            <td>
+              <!-- editable username (text with validation) -->
+              <span editable-text="connection.name" e-name="name" e-form="edit_form" e-required>
+                {{ connection.name || 'empty' }}
+              </span>
+            </td>
+            <td>
+              <!-- form -->
+              <form editable-form name="edit_form" onaftersave="saveConnection(this, connection)" ng-show="edit_form.$visible" class="" shown="inserted == connection">
+                <button type="submit" ng-disabled="edit_form.$waiting" class="btn btn-primary">
+                  save
+                </button>
+                <button type="button" ng-disabled="edit_form.$waiting" ng-click="edit_form.$cancel()" class="btn btn-default">
+                  cancel
+                </button>
+              </form>
+              <div class="buttons" ng-show="!edit_form.$visible">
+                <button class="btn btn-primary" onclick="scrollToEdit()" ng-click="editConnection(this, connection)">edit</button>
+                <button class="btn btn-danger" ng-click="removeConnection(this, connection)">del</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="connectionMap" class="well" style="width:45%; height:750px; float:right; padding:100px; margin:2%; margin-top:0%;"></div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+<div id="addRouteSection" class="container-fluid">
+    <p></p>
+
+    <div class="alert alert-info">
+      <h2>Create a new Route using Drag&Drop</h2>
+    </div>
+
+    <div class="well" style="float:left; width:50%; padding: 10px;">
+      <!-- Search Form  !-->
+      <form>
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">
+              <i class="fa fa-search"></i>
+            </div>
+            <!-- The search bar  !-->
+            <input id="searchStation" list="station_list" type="text" class="form-control" placeholder="Search Station name" ng-model="searchStation" ng-change="updateData(this)">
+            <!-- Suggestions (the most important ones at the start, will be replace in javascript when typing)  !-->
+            <datalist id="station_list">
+              <option value="Hauptplatz" />
+              <option value="Jakominiplatz" />
+              <option value="Hauptbahnhof" />
+              <option value="St. Peter" />
+              <option value="Griesplatz" />
+            </datalist>
+          </div>
+        </div>
+      </form>
+
+      <!-- Content List !-->
+      <div class="container-fluid" style="overflow-y:scroll;height:725px;">
+        <ul class="list list_stations list_sort scrollable">
+          <li class="list-group-item" ng-repeat="station in stations" value="{{station.id}}">{{station.name}} {{station.lat}} {{station.lon}}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Connected lists -->
+    <div class="container-fluid" style="width:50%; height:700px; top:0px; float:right; padding:0px; margin:0%; margin-top:0%;">
+      <div class="container-fluid" style="overflow-y:scroll;height:655px;">
+      <ul id="id_new_route" class="list list_new_routes list_sort">
+        <li class="list-group-item list-group-item-info">
+          <h4>Drop Stations here</h4>
+        </li>
+    <!--   <li id="my_li" class="list-group-item">
+         <a class="close" onclick="removeItem()">×</a>      
+      </li>   -->
+      </ul>
+    </div>
+
+      <div class="container-fluid" style="width:95%; height:500px; top:0px; float:right; padding:0px; margin:0%; margin-top:0%;">
+        <br>
+        <br>
+
+        <div class="input-group">
+          <input id="route_name" type="text" placeholder="Routename" class="form-control">
+          <span class="input-group-btn">
+            <button type="submit" ng-click="saveRoute(this)" class="btn btn-primary">
+              Save Route
+            </button>
+          </span>
+        </div>
+        <br>
+        <div id="feedback_div"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <div class="well" style="float:left; width:100%; padding: 30px;">
+  </div>
+
+  <div id="searchRestaurantsNearStationSection" class="container-fluid">
+
+    <div class="alert alert-info">
+      <h2>
+        Enter the name of a Station and the Distance to this station to get the Restaurants</h2>
+      <h4>
+        search will start at 3 characters
+      </h4>
+    </div>
+    <div class="well" style="float:left; width:100%; padding: 10px;">
+      <!-- Search Form  !-->
+      <form>
+        <div class="form-group">
+          <div class="input-group">
+            <div class="input-group-addon">
+              <i class="fa fa-search"></i>
+            </div>
+            <!-- The search bar  !-->
+            <input id="searchStation" list="station_list" type="text" class="form-control" placeholder="Search Station name" ng-model="searchStation" ng-change="updateData(this)">
+            <input id="distance" type="float" class="form-control" placeholder="Distance in km">
+            <button class="btn btn-primary" ng-click="updateNearRestaurantData(this)">Find</button>
+            <!-- Suggestions (the most important ones at the start, will be replace in javascript when typing)  !-->
+            <datalist id="station_list">
+              <option value="Hauptplatz" />
+              <option value="Jakominiplatz" />
+              <option value="Hauptbahnhof" />
+              <option value="St. Peter" />
+              <option value="Griesplatz" />
+            </datalist>
+          </div>
+        </div>
+      </form>
+      <!-- Content list !-->
+      <table id="RestaurantsourceTable" class="table table-bordered table-striped table-condensed">
+        <thead style="display: block; overflow: auto;">
+          <tr>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'name') && !sortReverse ;sortType = 'name'">
+                  name
+                  <span ng-show="sortType == 'name' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'name' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'amenity') && !sortReverse ;sortType = 'amenity'">
+                  amenity
+                  <span ng-show="sortType == 'amenity' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'amenity' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'cuisine') && !sortReverse ;sortType = 'cuisine'">
+                  cuisine
+                  <span ng-show="sortType == 'cuisine' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'cuisine' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'street') && !sortReverse ;sortType = 'street'">
+                  street
+                  <span ng-show="sortType == 'street' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'street' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'housenumber') && !sortReverse ;sortType = 'housenumber'">
+                  housenumber
+                  <span ng-show="sortType == 'housenumber' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'housenumber' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'city') && !sortReverse ;sortType = 'city'">
+                  city
+                  <span ng-show="sortType == 'city' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'city' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'opening_hours') && !sortReverse ;sortType = 'opening_hours'">
+                  opening_hours
+                  <span ng-show="sortType == 'opening_hours' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'opening_hours' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'phone') && !sortReverse ;sortType = 'phone'">
+                  phone
+                  <span ng-show="sortType == 'phone' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'phone' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'outside_seating') && !sortReverse ;sortType = 'outside_seating'">
+                  outside_seating
+                  <span ng-show="sortType == 'outside_seating' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'outside_seating' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'lon') && !sortReverse ;sortType = 'lon'">
+                  lon
+                  <span ng-show="sortType == 'lon' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'lon' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+            <td>
+              <a href="#searchRestaurantsNearStationSection" ng-click="sortReverse = (sortType == 'lat') && !sortReverse ;sortType = 'lat'">
+                  lat
+                  <span ng-show="sortType == 'lat' && !sortReverse" class="fa fa-caret-down"></span>
+                  <span ng-show="sortType == 'lat' && sortReverse" class="fa fa-caret-up"></span>
+                </a>
+            </td>
+          </tr>
+        </thead>
+        <tbody class="connectedSortable" style="display: block; max-height: 460px; overflow: auto;">
+          <tr ng-repeat="restaurant in restaurants | orderBy:sortType:sortReverse" style="width: 100%">
+            <td>
+              <span text="restaurant.name" e-name="name" e-form="rowform" e-required>
+                {{ restaurant.name}}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.amenity" e-name="amenity" e-form="rowform" e-required>
+                {{ restaurant.amenity}}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.cuisine" e-name="cuisine" e-form="rowform" e-required>
+                {{ restaurant.cuisine }}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.street" e-name="street" e-form="rowform" e-required>
+                {{ restaurant.street }}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.housenumber" e-name="housenumber" e-form="rowform" e-required>
+                {{ restaurant.housenumber}}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.city" e-name="city" e-form="rowform" e-required>
+                {{ restaurant.city}}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.opening_hours" e-name="opening_hours" e-form="rowform" e-required>
+                {{ restaurant.opening_hours }}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.phone" e-name="phone" e-form="rowform" e-required>
+                {{ restaurant.phone}}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.outside_seating" e-name="outside_seating" e-form="rowform" e-required>
+                {{ restaurant.outside_seating }}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.lon" e-name="lon" e-form="rowform" e-required>
+                {{ restaurant.lon }}
+              </span>
+            </td>
+            <td>
+              <span text="restaurant.lat" e-name="lat" e-form="rowform" e-required>
+                {{ restaurant.lat }}
+              </span>
+            </td>
+            <td>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="restaurantMap" class="well" style="width:90%; height:750px; float:left; padding:100px; margin:2%; margin-top:0%;"></div>
+  </div>
+</body>
+
+</html>

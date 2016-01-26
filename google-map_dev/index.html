@@ -1,0 +1,65 @@
+<html>
+
+<script src="http://maps.googleapis.com/maps/api/js"></script>
+<script>
+function initialize() {
+  var mapProp = {
+    center: new google.maps.LatLng(37.772, -122.214), //Jakomini als startpunkt
+    zoom:13,
+    mapTypeId:google.maps.MapTypeId.TERRAIN
+  };
+  var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+
+
+  var contentString = 'Jakomini Platz <a href="www.google.at">here</a>';
+
+    var infowindow = new google.maps.InfoWindow({
+      content: contentString
+    });
+
+
+  var marker = new google.maps.Marker({
+      position: new google.maps.LatLng(37.772, -122.214),
+      map: map,
+      title: 'Jakomini Platz'
+    });
+    marker.addListener("click", function() {
+        infowindow.open(map, marker);
+    });
+
+
+
+    var flightPlanCoordinates = [
+    {lat: 37.772, lng: -122.214},
+    {lat: 21.291, lng: -157.821},
+    {lat: -18.142, lng: 178.431},
+    {lat: -27.467, lng: 153.027}
+  ];
+  var flightPath = new google.maps.Polyline({
+    path: flightPlanCoordinates,
+    geodesic: true,
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+
+  flightPath.setMap(map);
+
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+
+<head>
+  <title>
+    Google Maps Test
+  </title>
+</head>
+
+<body>
+  <h1>
+    Maps TEST
+  </h1>
+  <div id="googleMap" style="width:500px;height:380px;"></div>
+</body>
+
+</html>
